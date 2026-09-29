@@ -3,7 +3,7 @@ package vista;
 import controlador.EmpleadoControlador;
 import modelo.LaclaseEmpleadoAdministrativo;
 import modelo.EmpleadoBase;
-import modelo.LaclaseEmpleadoAdministrativo;
+import modelo.EmpleadoComercial;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -58,7 +58,7 @@ public class VentanaEmpleados extends JFrame {
         campos.add(txtSalario);
         campos.add(new JLabel("Tipo de empleado:"));
         campos.add(cmbTipo);
-        campos.add(new JLabel("Bonificación (solo administrativos):"));
+        campos.add(new JLabel("Bonificación / Comisión %:"));
         campos.add(txtBonificacion);
         txtBonificacion.setEnabled(false);
 
@@ -125,9 +125,15 @@ public class VentanaEmpleados extends JFrame {
 
     private void conectarEventos() {
         cmbTipo.addActionListener(e -> {
-            boolean esAdministrativo = tipoSeleccionado().equals("Administrativo");
-            txtBonificacion.setEnabled(esAdministrativo);
-            if (!esAdministrativo) {
+            boolean esAdministrativo =
+                    tipoSeleccionado().equals("Administrativo");
+
+            boolean esComercial =
+                    tipoSeleccionado().equals("Comercial");
+
+            txtBonificacion.setEnabled(esAdministrativo || esComercial);
+
+            if (!esAdministrativo && !esComercial) {
                 txtBonificacion.setText("");
             }
         });
@@ -163,8 +169,20 @@ public class VentanaEmpleados extends JFrame {
         txtSalario.setText(String.format("%.0f", empleado.getSalarioBase()));
         cmbTipo.setSelectedItem(empleado.getTipo());
         if (empleado instanceof LaclaseEmpleadoAdministrativo) {
-            LaclaseEmpleadoAdministrativo administrativo = (LaclaseEmpleadoAdministrativo) empleado;
-            txtBonificacion.setText(String.format("%.0f", administrativo.getBonificacion()));
+
+            LaclaseEmpleadoAdministrativo administrativo =
+                    (LaclaseEmpleadoAdministrativo) empleado;
+
+            txtBonificacion.setText(
+                    String.format("%.0f", administrativo.getBonificacion()));
+
+        } else if (empleado instanceof EmpleadoComercial) {
+
+            EmpleadoComercial comercial =
+                    (EmpleadoComercial) empleado;
+
+            txtBonificacion.setText(
+                    String.format("%.0f", comercial.getPorcentajeComision()));
         }
     }
     private void eliminar() {

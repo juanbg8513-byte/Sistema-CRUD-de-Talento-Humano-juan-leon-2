@@ -1,13 +1,15 @@
 package controlador;
+
 import modelo.LaclaseEmpleadoAdministrativo;
 import modelo.EmpleadoBase;
 import modelo.Elrepositoriodeempleados;
+import modelo.EmpleadoComercial;
 
 import java.util.ArrayList;
 
 public class EmpleadoControlador {
 
-    public static final String[] TIPOS_EMPLEADO = {"Operativo", "Administrativo"};
+    public static final String[] TIPOS_EMPLEADO = {"Operativo", "Administrativo", "Comercial"};
 
     private final Elrepositoriodeempleados repositorio;
     private final ArrayList<String> historial;
@@ -54,15 +56,19 @@ public class EmpleadoControlador {
     private String validar(String cedula, String nombre, String salario,
                            String tipo, String bonificacion) {
 
-        if (cedula.isEmpty() || nombre.isEmpty()) {
-            return "La cédula y el nombre son obligatorios.";
+        if ((tipo.equals("Administrativo") || tipo.equals("Comercial"))
+                && !esNumeroValido(bonificacion)) {
+            return "La bonificación o comisión debe ser un número válido.";
         }
-        if (!esNumeroValido(salario)) {
-            return "El salario debe ser un número positivo (sin puntos de miles).";
+
+        if (tipo.equals("Comercial")) {
+            double porcentaje = Double.parseDouble(bonificacion);
+
+            if (porcentaje > 50) {
+                return "La comisión no puede ser mayor al 50%.";
+            }
         }
-        if (tipo.equals("Administrativo") && !esNumeroValido(bonificacion)) {
-            return "La bonificación debe ser un número positivo.";
-        }
+
         return null;
     }
 
@@ -70,10 +76,21 @@ public class EmpleadoControlador {
                                            String tipo, String bonificacion) {
 
         double salarioBase = Double.parseDouble(salario);
+
         if (tipo.equals("Administrativo")) {
             double bono = Double.parseDouble(bonificacion);
-            return new LaclaseEmpleadoAdministrativo(cedula, nombre, salarioBase, bono);
+
+            return new LaclaseEmpleadoAdministrativo(
+                    cedula, nombre, salarioBase, bono);
         }
+
+        if (tipo.equals("Comercial")) {
+            double porcentaje = Double.parseDouble(bonificacion);
+
+            return new EmpleadoComercial(
+                    cedula, nombre, salarioBase, porcentaje);
+        }
+
         return new EmpleadoBase(cedula, nombre, salarioBase);
     }
 
