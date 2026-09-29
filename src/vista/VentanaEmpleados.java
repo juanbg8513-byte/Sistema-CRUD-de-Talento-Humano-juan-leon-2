@@ -28,9 +28,9 @@ public class VentanaEmpleados extends JFrame {
     private final JButton btnHistorial = new JButton("Historial");
 
 
-
     private DefaultTableModel datosTabla;
     private final JLabel lblResumen = new JLabel();
+
     public VentanaEmpleados(EmpleadoControlador controlador) {
         super("Sistema CRUD de Talento Humano");
         this.controlador = controlador;
@@ -83,4 +83,41 @@ public class VentanaEmpleados extends JFrame {
         return (String) cmbTipo.getSelectedItem();
     }
 
+    private JScrollPane construirTabla() {
+        String[] columnas = {"Cédula", "Nombre", "Tipo", "Salario base", "Salario total"};
+
+        datosTabla = new DefaultTableModel(columnas, 0) {
+            @Override
+            public boolean isCellEditable(int fila, int columna) {
+                return false;
+
+            }
+
+        };
+        JTable tabla = new JTable(datosTabla);
+        JScrollPane scroll = new JScrollPane(tabla);
+        scroll.setBorder(BorderFactory.createTitledBorder("Empleados registrados"));
+        return scroll;
+    }
+
+    private void refrescarTabla() {
+        datosTabla.setRowCount(0);
+        for (EmpleadoBase empleado : controlador.obtenerEmpleados()) {
+            Object[] fila = {
+                    empleado.getCedula(),
+                    empleado.getNombre(),
+                    empleado.getTipo(),
+                    formatoPesos(empleado.getSalarioBase()),
+                    formatoPesos(empleado.calcularSalarioTotal())
+            };
+            datosTabla.addRow(fila);
+        }
+        lblResumen.setText("Empleados: " + datosTabla.getRowCount()
+                + " | Total nómina: "
+                + formatoPesos(controlador.calcularTotalNomina()));
+
+    }
+    private String formatoPesos(double valor) {
+        return String.format("$ %,.0f", valor);
+    }
 }
